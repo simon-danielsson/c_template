@@ -80,21 +80,23 @@ ENV_FLAGS=(
 # build -----------------------------------------------------------------------
 
 build() {
-    local SRC_DIR; local C_FLAGS; local BUILD_DIR
-
+    local C_FLAGS; local BUILD_DIR; local BIN_NAME
+    local SRC_DIR="\$ROOT_DIR/src"
     cd "\$ROOT_DIR"
 
     case "\$1" in
         debug)
-            BUILD_DIR="\$ROOT_DIR/build/debug"; SRC_DIR="\$ROOT_DIR/src"
+            BIN_NAME="\$PROJ_NAME-debug-\$VERSION-\$git_head_hash_short"
+            BUILD_DIR="\$ROOT_DIR/build/debug"
             C_FLAGS=(
-                "\${C_FLAGS_DEBUG[@]}"
-                "\${ENV_FLAGS[@]}"
+                "${C_FLAGS_DEBUG[@]}"
+                "${ENV_FLAGS[@]}"
             )
             ;;
 
         release)
-            BUILD_DIR="\$ROOT_DIR/build/release"; SRC_DIR="\$ROOT_DIR/src"
+            BIN_NAME="\$PROJ_NAME-release-\$VERSION-\$git_head_hash_short"
+            BUILD_DIR="\$ROOT_DIR/build/release"
             C_FLAGS=(
                 "\${C_FLAGS_RELEASE[@]}"
                 "\${ENV_FLAGS[@]}"
@@ -102,8 +104,10 @@ build() {
             ;;
 
         test)
-            BUILD_DIR="\$ROOT_DIR/build/test"; SRC_DIR="\$ROOT_DIR/test"
+            BIN_NAME="\$PROJ_NAME-test-\$VERSION-\$git_head_hash_short"
+            BUILD_DIR="\$ROOT_DIR/build/test"
             C_FLAGS=(
+                "-DTEST"
                 "\${C_FLAGS_DEBUG[@]}"
                 "\${ENV_FLAGS[@]}"
             )
@@ -115,9 +119,6 @@ build() {
     while IFS= read -r -d '' file; do
         FILES+=("\$file")
     done < <(find "\$SRC_DIR" \( -name "*.c" \) -type f -print0)
-
-    # define bin
-    local BIN_NAME="\$PROJ_NAME-\$VERSION-\$git_head_hash_short"
 
     # compile
     mkdir -p "\$BUILD_DIR"; cd \$ROOT_DIR
@@ -138,15 +139,17 @@ build() {
 
 help() {
     local bold="\\u001b[1m"; local reset="\\x1b[0m"
+
     printf "\${bold}run release\${reset}\\n"
-    printf "   src:  ./src\\n"
-    printf "   dest: ./build/release\\n\\n"
+    printf "    dest: ./build/release\\n"
+    printf "\\n"
+
     printf "\${bold}run debug\${reset}\\n"
-    printf "   src:  ./src\\n"
-    printf "   dest: ./build/debug\\n\\n"
+    printf "    dest: ./build/debug\\n"
+    printf "\\n"
+
     printf "\${bold}run test\${reset}\\n"
-    printf "   src:  ./test\\n"
-    printf "   dest: ./build/test\\n"
+    printf "    dest: ./build/test\\n"
 }
 
 # arguments -------------------------------------------------------------------
@@ -182,18 +185,18 @@ cat > "$target_dir/src/main.h" <<EOF
 #ifndef MAIN_H
 #define MAIN_H
 
+#if defined(NDEBUG)
+#define BUILD_RELEASE 0
+#define BUILD_DEBUG 1
+#else
+#define BUILD_RELEASE 1
+#define BUILD_DEBUG 0
+#endif
+
 #if defined(TEST)
 #define BUILD_TEST 1
 #else
 #define BUILD_TEST 0
-#endif
-
-#if defined(NDEBUG)
-#define BUILD_RELEASE 1
-#define BUILD_DEBUG 0
-#else
-#define BUILD_RELEASE 0
-#define BUILD_DEBUG 1
 #endif
 
 // standard libraries ---------------------------------------------------------
@@ -318,17 +321,6 @@ cat > "$target_dir/src/main.c" <<EOF
 
 i32 main(void) {
     printf("Hello, %s!\n", ENV_AUTHOR);
-    return 0;
-}
-EOF
-
-# generate tests folder
-mkdir -p "$target_dir/test"; touch "$target_dir/test/test.c"
-cat > "$target_dir/test/test.c" <<EOF
-#include "../src/main.h"
-
-i32 main(void) {
-    printf("test");
     return 0;
 }
 EOF

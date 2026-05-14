@@ -75,17 +75,35 @@ The generated project will have the following hierarchy:
 ├── LICENSE
 ├── README.md
 ├── run
-├── src
-│   ├── main.c
-│   └── main.h
-└── test
-    └── test.c
+└── src
+    ├── main.c
+    └── main.h
 ```
   
 Study the contents of the generated `run` script, as well as `main.h`, to
 understand how everything is wired.  
   
-### CLI (./run)
+### Running tests
+   
+Instead of a separate `/tests` folder, tests are ran within the main `./src` directory via a compiler flag `-DTEST` which will be defined as true when you execute `run test`. I prefer running tests inline as opposed to running them from separate files. See the following example:
+  
+``` c
+#include "main.h"
+
+i32 main(void) {
+
+    if (BUILD_TEST) {
+        i32 x = 8;
+        ASSERT(x == 8, true);
+        return 0;
+    }
+
+    printf("This is the main program");
+    return 0;
+}
+```
+  
+### CLI commands (./run)
   
 ``` terminal
 run help
