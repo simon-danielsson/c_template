@@ -186,11 +186,11 @@ cat > "$target_dir/src/main.h" <<EOF
 #define MAIN_H
 
 #if defined(NDEBUG)
-#define BUILD_RELEASE 0
-#define BUILD_DEBUG 1
-#else
 #define BUILD_RELEASE 1
 #define BUILD_DEBUG 0
+#else
+#define BUILD_RELEASE 0
+#define BUILD_DEBUG 1
 #endif
 
 #if defined(TEST)
