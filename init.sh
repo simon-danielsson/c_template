@@ -89,8 +89,8 @@ build() {
             BIN_NAME="\$PROJ_NAME-debug-\$VERSION-\$git_head_hash_short"
             BUILD_DIR="\$ROOT_DIR/build/debug"
             C_FLAGS=(
-                "${C_FLAGS_DEBUG[@]}"
-                "${ENV_FLAGS[@]}"
+                "\${C_FLAGS_DEBUG[@]}"
+                "\${ENV_FLAGS[@]}"
             )
             ;;
 
