@@ -44,7 +44,7 @@ run() {
 
 cinit() {
     curl -O https://raw.githubusercontent.com/simon-danielsson/c_template/refs/heads/main/init.sh || {
-        error "failed to curl cenv-init.sh"
+        error "failed to curl init.sh"
     }
     chmod +x ./init.sh
     ./init.sh $1
