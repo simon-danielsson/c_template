@@ -121,7 +121,12 @@ build() {
 
     # compile
     mkdir -p "\$BUILD_DIR"; cd \$ROOT_DIR
-    gcc "\${C_FLAGS[@]}" "\${FILES[@]}" -o "\$BUILD_DIR"/"\$BIN_NAME"
+
+    if gcc -v >/dev/null 2>&1; then
+        gcc "\${C_FLAGS[@]}" "\${FILES[@]}" -o "\$BUILD_DIR"/"\$BIN_NAME"
+    else
+        clang "\${C_FLAGS[@]}" "\${FILES[@]}" -o "\$BUILD_DIR"/"\$BIN_NAME"
+    fi
 
     if [ "\$AUTO_RUN" -eq 1 ]; then
         "\$BUILD_DIR"/"\$BIN_NAME"
