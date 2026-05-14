@@ -1,0 +1,84 @@
+<h1 align="center">c_template</h1>
+  
+<p align="center">
+    <img src="https://img.shields.io/badge/license-MIT-green?style=flat-square" alt="MIT License" />
+  <img src="https://img.shields.io/github/last-commit/simon-danielsson/visa/main?style=flat-square&color=blue" alt="Last commit" />
+</p>
+  
+<p align="center">
+  <a href="#info">Info</a> •
+  <a href="#install">Install</a> •
+  <a href="#usage">Usage</a> •
+  <a href="#license">License</a>
+</p>  
+  
+---
+<div id="info"></div>
+
+## Info
+  
+This is my template for initializing, building and running C projects. No
+build-system, only bash and gcc.
+  
+<div id="install"></div>
+  
+## Install
+  
+There is no installation in the traditional sense; just add these two functions
+into your .bashrc (or an equivalent file in your shell path) and you're good to go.
+  
+``` bash
+#!/usr/bin/env bash
+
+run() {
+    local dir="$(pwd)"
+    while [[ "$dir" != "$HOME" ]]; do
+        if [[ -f "$dir/run" ]]; then
+            (cd "$dir" && ./run "$@")
+            return
+        fi
+        dir="$(dirname "$dir")"
+    done
+    echo "no project root found" >&2
+    return 1
+}
+
+cinit() {
+    curl -O https://raw.githubusercontent.com/simon-danielsson/c_template/refs/heads/main/init.sh || {
+        error "failed to curl cenv-init.sh"
+    }
+    chmod +x ./init.sh
+    ./init.sh $1
+    rm init.sh
+}
+  
+---
+<div id="usage"></div>
+  
+## Usage
+  
+### Creating a new project
+    
+Run `cinit` with the name of your new project as an argument. A new project
+folder will be created in the current directory.
+   
+``` bash
+cinit <project-name>
+```
+  
+### CLI
+  
+``` bash
+run help
+run debug
+run release
+run test
+```
+  
+---
+<div id="license"></div>
+  
+## License
+  
+This project is licensed under the [MIT License](https://github.com/simon-danielsson/visa/blob/main/LICENSE).  
+ 
