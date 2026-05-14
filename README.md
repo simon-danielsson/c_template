@@ -17,8 +17,7 @@
 
 ## Info
   
-This is my template for initializing, building and running C projects. No
-build-system, only bash and gcc.
+This is my template for initializing, building and running C projects without a build-system.
   
 <div id="install"></div>
   
