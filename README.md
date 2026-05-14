@@ -2,7 +2,7 @@
   
 <p align="center">
     <img src="https://img.shields.io/badge/license-MIT-green?style=flat-square" alt="MIT License" />
-  <img src="https://img.shields.io/github/last-commit/simon-danielsson/visa/main?style=flat-square&color=blue" alt="Last commit" />
+  <img src="https://img.shields.io/github/last-commit/simon-danielsson/c_template/main?style=flat-square&color=blue" alt="Last commit" />
 </p>
   
 <p align="center">
@@ -51,6 +51,7 @@ cinit() {
     ./init.sh $1
     rm init.sh
 }
+```
   
 ---
 <div id="usage"></div>
@@ -80,5 +81,5 @@ run test
   
 ## License
   
-This project is licensed under the [MIT License](https://github.com/simon-danielsson/visa/blob/main/LICENSE).  
+This project is licensed under the [MIT License](https://github.com/simon-danielsson/c_template/blob/main/LICENSE).  
  
