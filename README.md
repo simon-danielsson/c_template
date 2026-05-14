@@ -66,19 +66,20 @@ folder will be created in the current directory.
 cinit <project-name>
 ```
   
-The generated project will have the following hierarchy.  
+The generated project will have the following hierarchy:  
   
 ``` terminal
-├── 󱞋 .git
-├──  .gitignore
-├──  LICENSE
-├──  README.md
-├──  run
-├── 󰉖 src
-│   ├──  main.c
-│   └──  main.h
-└── 󰉖 test
-    └──  test.c
+(root)
+├── .git
+├── .gitignore
+├── LICENSE
+├── README.md
+├── run
+├── src
+│   ├── main.c
+│   └── main.h
+└── test
+    └── test.c
 ```
   
 Study the contents of the generated `run` script, as well as `main.h`, to
@@ -86,7 +87,7 @@ understand how everything is wired.
   
 ### CLI (./run)
   
-``` bash
+``` terminal
 run help
 run debug
 run release
