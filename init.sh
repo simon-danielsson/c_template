@@ -256,18 +256,16 @@ typedef double f64;
 
 // logging --------------------------------------------------------------------
 
-#define LOG_ANSI_RED "\x1b[4;31m"
-#define LOG_ANSI_GREEN "\x1b[4;32m"
-#define LOG_ANSI_YELLOW "\x1b[4;33m"
-#define LOG_ANSI_BLUE "\x1b[4;34m"
-#define LOG_ANSI_RESET "\x1b[0m"
+#define LOG_STYLE "\x1b[1m"
+#define LOG_RESET "\x1b[0m"
 
 #ifndef __FILE_NAME__
 #define __FILE_NAME__ __FILE__
 #endif
 
 #define LOG_POS_DETAILS __FILE_NAME__, __LINE__, __func__
-#define LOG_PREFIX ""
+#define LOG_PREFIX "=>"
+#define LOG_SEP "||"
 
 #if defined(NDEBUG)
 #define ASSERT(cond, do_abort) ((void)0)
@@ -276,11 +274,11 @@ typedef double f64;
 #define ASSERT(cond, do_abort)                                                 \
     do {                                                                         \
         if ((cond)) {                                                              \
-            fprintf(stderr, "%s%sSUCCESS%s %s [%s:%d %s]\n", LOG_PREFIX,             \
-                    LOG_ANSI_GREEN, LOG_ANSI_RESET, #cond, LOG_POS_DETAILS);         \
+            fprintf(stderr, "%s %sSUCCESS%s %s %s [%s:%d (%s)]\n", LOG_PREFIX,       \
+                    LOG_STYLE, LOG_RESET, LOG_SEP, #cond, LOG_POS_DETAILS);          \
         } else {                                                                   \
-            fprintf(stderr, "%s%sFAILURE%s %s [%s:%d %s]\n", LOG_PREFIX,             \
-                    LOG_ANSI_RED, LOG_ANSI_RESET, #cond, LOG_POS_DETAILS);           \
+            fprintf(stderr, "%s %sFAILURE%s %s %s [%s:%d (%s)]\n", LOG_PREFIX,       \
+                    LOG_STYLE, LOG_RESET, LOG_SEP, #cond, LOG_POS_DETAILS);          \
         }                                                                          \
         if (!(cond) && (do_abort)) {                                               \
             abort();                                                                 \
@@ -289,8 +287,9 @@ typedef double f64;
 
 #define LOG(fmt, ...)                                                          \
     do {                                                                         \
-        fprintf(stderr, "%s%sLOG%s %s [%s:%d %s]\n", LOG_PREFIX, LOG_ANSI_BLUE,    \
-                LOG_ANSI_RESET, fmt __VA_OPT__(, ) __VA_ARGS__, LOG_POS_DETAILS);  \
+        fprintf(stderr, "%s %sLOG%s %s %s [%s:%d (%s)]\n", LOG_PREFIX, LOG_STYLE,  \
+                LOG_RESET, LOG_SEP, fmt __VA_OPT__(, ) __VA_ARGS__,                \
+                LOG_POS_DETAILS);                                                  \
     } while (0)
 
 #endif
@@ -298,16 +297,17 @@ typedef double f64;
 // not implemented (todo msg that aborts the program)
 #define NOT_IMPL(fmt, ...)                                                     \
     do {                                                                         \
-        fprintf(stderr, "%s%sNOT IMPL%s %s [%s:%d %s]\n", LOG_PREFIX,              \
-                LOG_ANSI_YELLOW, LOG_ANSI_RESET, fmt __VA_OPT__(, ) __VA_ARGS__,   \
+        fprintf(stderr, "%s %sNOT IMPL%s %s %s [%s:%d (%s)]\n", LOG_PREFIX,        \
+                LOG_STYLE, LOG_RESET, LOG_SEP, fmt __VA_OPT__(, ) __VA_ARGS__,     \
                 LOG_POS_DETAILS);                                                  \
         abort();                                                                   \
     } while (0)
 
 #define PANIC(fmt, ...)                                                        \
     do {                                                                         \
-        fprintf(stderr, "%s%sPANIC%s %s [%s:%d %s]\n", LOG_PREFIX, LOG_ANSI_RED,   \
-                LOG_ANSI_RESET, fmt __VA_OPT__(, ) __VA_ARGS__, LOG_POS_DETAILS);  \
+        fprintf(stderr, "%s %sPANIC%s %s %s [%s:%d (%s)]\n", LOG_PREFIX,           \
+                LOG_STYLE, LOG_RESET, LOG_SEP, fmt __VA_OPT__(, ) __VA_ARGS__,     \
+                LOG_POS_DETAILS);                                                  \
         abort();                                                                   \
     } while (0)
 
