@@ -95,13 +95,13 @@ def help() -> None:
     print(f"dest: ./build/test")
 
 class BuildType(Enum):
-    RELEASE = "release"
-    DEBUG = "debug"
-    TEST = "test"
+    Release = "release"
+    Debug = "debug"
+    Test = "test"
 
 @dataclass
 class Args:
-    build: BuildType = BuildType.DEBUG
+    build: BuildType = BuildType.Debug
     help: bool = False
 
 def get_args() -> Args:
@@ -109,11 +109,11 @@ def get_args() -> Args:
     for arg in sys.argv:
         match arg:
             case r if r.startswith("r"):
-                a.build = BuildType.RELEASE
+                a.build = BuildType.Release
             case d if d.startswith("d"):
-                a.build = BuildType.DEBUG
+                a.build = BuildType.Debug
             case t if t.startswith("t"):
-                a.build = BuildType.TEST
+                a.build = BuildType.Test
             case h if h.startswith("h"):
                 a.help = True
     return a
@@ -137,11 +137,11 @@ def build(a: Args) -> None:
     c_flags: list[str] = ENV_FLAGS
 
     match a.build:
-        case BuildType.DEBUG:
+        case BuildType.Debug:
             c_flags = c_flags + C_FLAGS_DEBUG
-        case BuildType.RELEASE:
+        case BuildType.Release:
             c_flags = c_flags + C_FLAGS_RELEASE
-        case BuildType.TEST:
+        case BuildType.Test:
             c_flags.append("-DTEST")
             c_flags = c_flags + C_FLAGS_DEBUG
 
@@ -152,9 +152,9 @@ def build(a: Args) -> None:
             ["-o", f"{build_dir}/{bin_name}"]
 
     compiler = "gcc"
-    if run_cmd([compiler, "-v"]).process.returncode == 0:
+    try:
         output = run_cmd([compiler] + build_cmd)
-    else:
+    except FileNotFoundError:
         compiler = "clang"
         output = run_cmd([compiler] + build_cmd)
 
