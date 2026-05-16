@@ -145,7 +145,7 @@ def build(a: Args) -> None:
         output = run_cmd([compiler] + build_cmd)
 
     if PRINT_COMPILE_DETAILS:
-        print(f"{a.build.value} via " f"{compiler} ({C_STD}) {output.exec_time}\n")
+        print(f"{a.build.value} via " f"{compiler} ({C_STD}) {output.exec_time}")
 
     if AUTO_RUN:
         if output.process.returncode != 0:
