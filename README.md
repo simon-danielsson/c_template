@@ -17,8 +17,8 @@
 
 ## Info
   
-This is my template for initializing, building and running C projects without a build-system.
-  
+This is my template for initializing, building, running, as well as maintaining C projects without any third-party build-system. Built to be quick to use on both MacOS and Linux.  
+
 <div id="install"></div>
   
 ## Install
