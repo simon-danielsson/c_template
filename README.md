@@ -17,7 +17,7 @@
 
 ## Info
   
-This is my template for initializing, building, running, as well as maintaining C projects without any third-party build-system. Built to be quick to use on both MacOS and Linux.  
+This is my template for initializing, building, running, as well as maintaining C projects without any third-party build-system. Built to be quick and easy to use on both MacOS and Linux.  
   
 ### Requirements
 - Unix system
