@@ -15,8 +15,8 @@ if [ -e "$target_dir" ]; then
 fi
 
 # run
-mkdir -p "$target_dir"; touch "$target_dir/run"
-cat > "$target_dir/run" <<EOF
+mkdir -p "$target_dir"; touch "$target_dir/run.py"
+cat > "$target_dir/run.py" <<EOF
 #!/usr/bin/env python3
 
 import subprocess, sys, os
@@ -181,7 +181,7 @@ if __name__ == "__main__":
     main()
 EOF
 
-chmod +x "$target_dir/run" || {
+chmod +x "$target_dir/run.py" || {
     error "Failed to make run script executable"
 }
 

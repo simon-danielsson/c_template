@@ -32,8 +32,8 @@ into your .bashrc (or an equivalent file in your shell path) and you're good to 
 run() {
     local dir="$(pwd)"
     while [[ "$dir" != "$HOME" ]]; do
-        if [[ -f "$dir/run" ]]; then
-            (cd "$dir" && ./run "$@")
+        if [[ -f "$dir/run.py" ]]; then
+            (cd "$dir" && ./run.py "$@")
             return
         fi
         dir="$(dirname "$dir")"
