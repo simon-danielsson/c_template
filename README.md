@@ -85,16 +85,17 @@ understand how everything is wired.
   
 ### Running tests
    
-Instead of a separate `/tests` folder, tests are ran within the main `./src` directory via a compiler flag `-DTEST` which will be defined as true when you execute `run test`. I prefer running tests inline as opposed to running them from separate files. See the following example:
+The bulk of testing in my programs consist of short inline unit tests. These are ran from within the main `./src` directory via a compiler flag `-DTEST` which will be defined as true when you execute `run test`. As the programmer you will need to choose yourself how you want the organize tests in your code. See the following example:  
   
 ``` c
 #include "main.h"
+#include "tests.h"
 
 i32 main(void) {
-
-    if (BUILD_TEST) {
-        i32 x = 8;
-        ASSERT(x == 8, true);
+    if (BUILD_TEST) { // true only if command "run test"
+        LOG("Test 1"); test1();
+        LOG("Test 2"); test2();
+        LOG("Test 3"); test3();
         return 0;
     }
 
