@@ -32,7 +32,7 @@ PROJ_NAME = ROOT.name
 PROJ_REPO = f"https://github.com/simon-danielsson/{PROJ_NAME}"
 AUTH = "Simon Danielsson"
 AUTH_CONT = "contact@simondanielsson.se"
-C_STD = "gnu23"
+C_STD = "gnu2x"
 
 AUTO_RUN = True
 PRINT_COMPILE_DETAILS = True
@@ -148,11 +148,15 @@ def build(a: Args) -> None:
         print(f"{a.build.value} via " f"{compiler} ({C_STD}) {output.exec_time}\n")
 
     if AUTO_RUN:
+        if output.process.returncode != 0:
+            print(output.process.stderr)
+            sys.exit(output.process.returncode)
+
         env = os.environ.copy()
         if platform.system() == "Darwin":
             env["MallocNanoZone"] = "0"
-        exe_path = os.path.join(build_dir, bin_name)
-        os.execve(exe_path, [exe_path], env)
+        exe_path = (build_dir/bin_name).resolve()
+        os.execvpe(str(exe_path), [str(exe_path)], env)
 
 # main ------------------------------------------------------------------------
 
