@@ -74,13 +74,13 @@ The generated project will have the following hierarchy:
 ├── .gitignore
 ├── LICENSE
 ├── README.md
-├── run
+├── run.py
 └── src
     ├── main.c
     └── main.h
 ```
   
-Study the contents of the generated `run` script, as well as `main.h`, to
+Study the contents of the generated `run.py` script, as well as `main.h`, to
 understand how everything is wired.  
   
 ### Running tests
@@ -103,7 +103,7 @@ i32 main(void) {
 }
 ```
   
-### CLI commands (./run)
+### CLI commands (run.py)
   
 ``` terminal
 run help
