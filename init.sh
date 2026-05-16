@@ -19,11 +19,13 @@ mkdir -p "$target_dir"; touch "$target_dir/run.py"
 cat > "$target_dir/run.py" <<EOF
 #!/usr/bin/env python3
 
+from re import DEBUG
 import subprocess, sys, os
 from pathlib import Path
 from datetime import datetime, timedelta
 from dataclasses import dataclass
 from enum import Enum
+import platform
 
 ROOT = Path(__file__).parent.resolve()
 SRC_DIR = Path(f"{ROOT}/src")
@@ -34,14 +36,14 @@ AUTH_CONT = "contact@simondanielsson.se"
 C_STD = "gnu23"
 
 AUTO_RUN = True
-PRINT_COMPILE_TIME = True
-PRINT_C_STD = True
+PRINT_COMPILE_DETAILS = True
 
 C_FLAGS_DEBUG = [
-        "-g",
         "-O0",
         "-DDEBUG",
         "-fsanitize=address",
+        "-fsanitize=undefined",
+        "-fno-omit-frame-pointer",
         "-Wall",
         "-Wextra",
         "-Wpedantic",
@@ -51,19 +53,23 @@ C_FLAGS_DEBUG = [
 
 C_FLAGS_RELEASE = ["-flto", "-O2", "-DNDEBUG", "-Wextra"]
 
-# program ---------------------------------------------------------------------
+BLD = "\033[1m"
+RST = "\x1b[0m"
+# cmd exec --------------------------------------------------------------------
 
 @dataclass
-class BuildCmd:
+class CmdExec:
     process: subprocess.CompletedProcess[str]
     exec_time: timedelta
 
-def run_cmd(cmd) -> BuildCmd:
+def run_cmd(cmd) -> CmdExec:
     start = datetime.now()
     process = subprocess.run(cmd, capture_output=True, text=True)
     end = datetime.now()
     exec_time = end - start
-    return BuildCmd(exec_time=exec_time, process=process)
+    return CmdExec(exec_time=exec_time, process=process)
+
+# git & env -------------------------------------------------------------------
 
 def get_git_vers() -> str:
     cmd = ["git", "describe", "--tags", "--abbrev=0"]
@@ -85,40 +91,6 @@ GIT_V = get_git_vers()
 GIT_HASH_SH = get_git_hash(True)
 GIT_HASH = get_git_hash(False)
 
-def help() -> None:
-    bold = "\u001b[1m"
-    reset = "\x1b[0m"
-    print(f"{bold}run [r]elease{reset}")
-    print(f"dest: ./build/release")
-    print(f"{bold}run [d]ebug{reset}")
-    print(f"dest: ./build/debug")
-    print(f"{bold}run [t]est{reset}")
-    print(f"dest: ./build/test")
-
-class BuildType(Enum):
-    Release = "release"
-    Debug = "debug"
-    Test = "test"
-
-@dataclass
-class Args:
-    build: BuildType = BuildType.Debug
-    help: bool = False
-
-def get_args() -> Args:
-    a: Args = Args()
-    for arg in sys.argv:
-        match arg:
-            case r if r.startswith("r"):
-                a.build = BuildType.Release
-            case d if d.startswith("d"):
-                a.build = BuildType.Debug
-            case t if t.startswith("t"):
-                a.build = BuildType.Test
-            case h if h.startswith("h"):
-                a.help = True
-    return a
-
 ENV_FLAGS = [
         f'-DENV_GITHASH="{GIT_HASH}"',
         f'-DENV_GITTAG="{GIT_V}"',
@@ -128,6 +100,8 @@ ENV_FLAGS = [
         f'-DENV_REPO="{PROJ_REPO}"',
         f"-std={C_STD}",
         ]
+
+# build -----------------------------------------------------------------------
 
 def collect_src_files(src: Path) -> list[str]:
     return [f"{path}" for path in src.rglob("*.c")]
@@ -152,23 +126,59 @@ def build(a: Args) -> None:
             collect_src_files(SRC_DIR) + \
             ["-o", f"{build_dir}/{bin_name}"]
 
-    compiler = "gcc"
     try:
+        compiler = "gcc"
         output = run_cmd([compiler] + build_cmd)
     except FileNotFoundError:
         compiler = "clang"
         output = run_cmd([compiler] + build_cmd)
 
-    std = ""
-    if PRINT_C_STD:
-        std = f" {C_STD}"
-
-    if PRINT_COMPILE_TIME:
-        print(f"compile time ({compiler}{std}): {output.exec_time}")
+    if PRINT_COMPILE_DETAILS:
+        print(f"{a.build.value} via "
+              f"{compiler} ({C_STD}) {output.exec_time}\n")
 
     if AUTO_RUN:
-        auto_run_args = [f"{build_dir}/{bin_name}"]
-        os.execvp(f"{build_dir}/{bin_name}", auto_run_args)
+        env = os.environ.copy()
+        if platform.system() == "Darwin":
+            env["MallocNanoZone"] = "0"
+        exe_path = os.path.join(build_dir, bin_name)
+        os.execve(exe_path, [exe_path], env)
+
+# main ------------------------------------------------------------------------
+
+def help() -> None:
+    print(f"{BLD}run release{RST}\n"
+          f"-> ./build/release\n"
+          f"{BLD}run debug{RST}\n"
+          f"-> ./build/debug\n"
+          f"{BLD}run test{RST}\n"
+          f"-> ./build/test")
+
+class BuildType(Enum):
+    Release = "release"
+    Debug = "debug"
+    Test = "test"
+
+@dataclass
+class Args:
+    build: BuildType = BuildType.Debug
+    help: bool = False
+    prog: str = ""
+
+def get_args() -> Args:
+    a: Args = Args()
+    a.prog = sys.argv[0].rsplit('/')[-1]
+    for arg in sys.argv:
+        match arg:
+            case r if r.startswith("r"):
+                a.build = BuildType.Release
+            case d if d.startswith("d"):
+                a.build = BuildType.Debug
+            case t if t.startswith("t"):
+                a.build = BuildType.Test
+            case h if h.startswith("h"):
+                a.help = True
+    return a
 
 def main():
     a: Args = get_args()
