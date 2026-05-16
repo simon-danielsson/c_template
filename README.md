@@ -85,7 +85,7 @@ understand how everything is wired.
   
 ### Running tests
    
-The bulk of testing in my programs consist of short inline unit tests. These are ran from within the main `./src` directory via a compiler flag `-DTEST` which will be defined as true when you execute `run test`. As the programmer you will need to choose yourself how you want the organize tests in your code. See the following example:  
+The bulk of testing in my programs consist of short inline unit tests. These are ran from within the main `./src` directory via a compiler flag `-DTEST` which will be defined as true when you execute `run test`. You will need to decide on your own how to organize tests in your code. See the following example:  
   
 ``` c
 #include "main.h"
