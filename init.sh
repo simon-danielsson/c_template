@@ -274,7 +274,7 @@ typedef double f64;
 
 #define LOG_POS_DETAILS __FILE_NAME__, __LINE__, __func__
 #define LOG_PREFIX "=>"
-#define LOG_SEP "||"
+#define LOG_SEP ":"
 
 #if defined(NDEBUG)
 #define ASSERT(cond, do_abort) ((void)0)
