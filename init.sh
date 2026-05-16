@@ -35,6 +35,7 @@ C_STD = "gnu23"
 
 AUTO_RUN = True
 PRINT_COMPILE_TIME = True
+PRINT_C_STD = True
 
 C_FLAGS_DEBUG = [
         "-g",
@@ -158,8 +159,12 @@ def build(a: Args) -> None:
         compiler = "clang"
         output = run_cmd([compiler] + build_cmd)
 
+    std = ""
+    if PRINT_C_STD:
+        std = f" {C_STD}"
+
     if PRINT_COMPILE_TIME:
-        print(f"compile time ({compiler}): {output.exec_time}")
+        print(f"compile time ({compiler}{std}): {output.exec_time}")
 
     if AUTO_RUN:
         auto_run_args = [f"{build_dir}/{bin_name}"]
