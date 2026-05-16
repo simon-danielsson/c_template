@@ -17,159 +17,155 @@ fi
 # run
 mkdir -p "$target_dir"; touch "$target_dir/run"
 cat > "$target_dir/run" <<EOF
-#!/usr/bin/env bash
+#!/usr/bin/env python3
 
-# project variables -----------------------------------------------------------
+from pathlib import Path
+from datetime import datetime
+from dataclasses import dataclass
+from enum import Enum
+import subprocess
+import sys
+import os
 
-PROJ_NAME="$name"
-PROJ_REPO="https://github.com/simon-danielsson/\$PROJ_NAME"
-AUTH="Simon Danielsson"
-AUTH_CONT="contact@simondanielsson.se"
-C_STD="gnu23"
+ROOT = Path(__file__).parent.resolve()
+SRC_DIR = Path(f"{ROOT}/src")
+PROJ_NAME = ROOT.name
+PROJ_REPO = f"https://github.com/simon-danielsson/{PROJ_NAME}"
+AUTH = "Simon Danielsson"
+AUTH_CONT = "contact@simondanielsson.se"
+C_STD = "gnu23"
 
-AUTO_RUN=1 # run program after build (0|1)
+AUTO_RUN = True
 
-C_FLAGS_DEBUG=( # debug & test build
-    "-g"
-    "-O0"
-    "-DDEBUG"
-    "-fsanitize=address"
-    "-Wall"
-    "-Wextra"
-    "-Wpedantic"
-    "-Wshadow"
-    "-Werror=format-security"
-)
+C_FLAGS_DEBUG = [
+        "-g",
+        "-O0",
+        "-DDEBUG",
+        "-fsanitize=address",
+        "-Wall",
+        "-Wextra",
+        "-Wpedantic",
+        "-Wshadow",
+        "-Werror=format-security",
+        ]
 
-C_FLAGS_RELEASE=( # release build
-    "-flto"
-    "-O2"
-    "-DNDEBUG"
-    "-Wextra"
-)
+C_FLAGS_RELEASE = ["-flto", "-O2", "-DNDEBUG", "-Wextra"]
 
-# dir and date variables ------------------------------------------------------
+DATE = f"{datetime.now().strftime("%Y-%m-%d")}"
 
-ROOT_DIR="\$(cd "\$(dirname "\${BASH_SOURCE[0]}")" && pwd)"
-current_date=\$(date +"%F")
+# program ---------------------------------------------------------------------
 
-# get git details -------------------------------------------------------------
+def collect_src_files(src: Path) -> list[str]:
+    src_files: list[str] = []
+    for path in src.rglob("*.c"):
+        src_files.append(f"{path}")
+    return src_files
 
-if git rev-parse --is-inside-work-tree > /dev/null 2>&1; then
-    git_head_hash_short=\$(git rev-parse --short HEAD)
-    git_head_hash_long=\$(git rev-parse HEAD)
-else
-    git_head_hash_short="nogit"; git_head_hash_long="0.0.0"
-fi
+def run_cmd(cmd) -> subprocess.CompletedProcess[str]:
+    return subprocess.run(cmd, capture_output=True, text=True)
 
-get_version() {
-    git describe --tags --abbrev=0 2>/dev/null || echo "v0.1.0"
-}
-VERSION="\$(get_version)"
+def get_git_vers() -> str:
+    cmd = ["git", "describe", "--tags", "--abbrev=0"]
+    result = run_cmd(cmd)
+    if result.returncode != 0:
+        return "v0.0.0"
+    return result.stdout.strip()
 
-ENV_FLAGS=(
-    "-DENV_GITHASH=\"\${git_head_hash_long}\""
-    "-DENV_GITTAG=\"\${VERSION}\""
-    "-DENV_NAME=\"\${PROJ_NAME}\""
-    "-DENV_AUTHOR=\"\${AUTH}\""
-    "-DENV_CONTACT=\"\${AUTH_CONT}\""
-    "-DENV_REPO=\"\${PROJ_REPO}\""
-    "-std=\${C_STD}"
-)
+def get_git_hash(short: bool) -> str:
+    cmd = ["git", "rev-parse", "HEAD"]
+    if short:
+        cmd.insert(2, "--short")
+    result = run_cmd(cmd)
+    if result.returncode != 0:
+        return "0".zfill(7)
+    return result.stdout.strip()
 
-# build -----------------------------------------------------------------------
+def help() -> None:
+    bold = "\u001b[1m"
+    reset = "\x1b[0m"
+    print(f"{bold}run [r]elease{reset}")
+    print(f"dest: ./build/release")
+    print(f"{bold}run [d]ebug{reset}")
+    print(f"dest: ./build/debug")
+    print(f"{bold}run [t]est{reset}")
+    print(f"dest: ./build/test")
 
-build() {
-    local C_FLAGS; local BUILD_DIR; local BIN_NAME
-    local SRC_DIR="\$ROOT_DIR/src"
-    cd "\$ROOT_DIR"
+class BuildType(Enum):
+    RELEASE = "release"
+    DEBUG = "debug"
+    TEST = "test"
 
-    case "\$1" in
-        debug)
-            BIN_NAME="\$PROJ_NAME-debug-\$VERSION-\$git_head_hash_short"
-            BUILD_DIR="\$ROOT_DIR/build/debug"
-            C_FLAGS=(
-                "\${C_FLAGS_DEBUG[@]}"
-                "\${ENV_FLAGS[@]}"
-            )
-            ;;
+@dataclass
+class Args:
+    build: BuildType = BuildType.DEBUG
+    help: bool = False
 
-        release)
-            BIN_NAME="\$PROJ_NAME-release-\$VERSION-\$git_head_hash_short"
-            BUILD_DIR="\$ROOT_DIR/build/release"
-            C_FLAGS=(
-                "\${C_FLAGS_RELEASE[@]}"
-                "\${ENV_FLAGS[@]}"
-            )
-            ;;
+def get_args() -> Args:
+    a: Args = Args()
+    for arg in sys.argv:
+        match arg:
+            case r if r.startswith("r"):
+                a.build = BuildType.RELEASE
+            case d if d.startswith("d"):
+                a.build = BuildType.DEBUG
+            case t if t.startswith("t"):
+                a.build = BuildType.TEST
+            case h if h.startswith("h"):
+                a.help = True
+    return a
 
-        test)
-            BIN_NAME="\$PROJ_NAME-test-\$VERSION-\$git_head_hash_short"
-            BUILD_DIR="\$ROOT_DIR/build/test"
-            C_FLAGS=(
-                "-DTEST"
-                "\${C_FLAGS_DEBUG[@]}"
-                "\${ENV_FLAGS[@]}"
-            )
-            ;;
-    esac
+ENV_FLAGS = [
+        f'-DENV_GITHASH="{get_git_hash(False)}"',
+        f'-DENV_GITTAG="{get_git_vers()}"',
+        f'-DENV_NAME="{PROJ_NAME}"',
+        f'-DENV_AUTHOR="{AUTH}"',
+        f'-DENV_CONTACT="{AUTH_CONT}"',
+        f'-DENV_REPO="{PROJ_REPO}"',
+        f"-std={C_STD}",
+        ]
 
-    # collect source files
-    FILES=()
-    while IFS= read -r -d '' file; do
-        FILES+=("\$file")
-    done < <(find "\$SRC_DIR" \( -name "*.c" \) -type f -print0)
+def build(a: Args) -> None:
+    hash = get_git_hash(True)
+    version = get_git_vers()
+    build_dir = Path(f"{ROOT}/build/{a.build.value}")
+    bin_name = f"{PROJ_NAME}_{a.build.value}_{DATE}_{version}_{hash}"
+    c_flags: list[str] = ENV_FLAGS
 
-    # compile
-    mkdir -p "\$BUILD_DIR"; cd \$ROOT_DIR
+    match a.build:
+        case BuildType.DEBUG:
+            c_flags = c_flags + C_FLAGS_DEBUG
+        case BuildType.RELEASE:
+            c_flags = c_flags + C_FLAGS_RELEASE
+        case BuildType.TEST:
+            c_flags.append("-DTEST")
+            c_flags = c_flags + C_FLAGS_DEBUG
 
-    if gcc -v >/dev/null 2>&1; then
-        gcc "\${C_FLAGS[@]}" "\${FILES[@]}" -o "\$BUILD_DIR"/"\$BIN_NAME"
-    else
-        clang "\${C_FLAGS[@]}" "\${FILES[@]}" -o "\$BUILD_DIR"/"\$BIN_NAME"
-    fi
+    os.makedirs(build_dir, exist_ok=True)
 
-    if [ "\$AUTO_RUN" -eq 1 ]; then
-        "\$BUILD_DIR"/"\$BIN_NAME"
-    fi
+    src_files = collect_src_files(SRC_DIR)
 
-}
+    gcc = ["gcc"] + c_flags + src_files + ["-o", f"{build_dir}/{bin_name}"]
+    clang = ["clang"] + c_flags + src_files + ["-o", f"{build_dir}/{bin_name}"]
 
-# help ------------------------------------------------------------------------
+    output = run_cmd(gcc)
+    if output.returncode != 0:
+        run_cmd(clang)
 
-help() {
-    local bold="\\u001b[1m"; local reset="\\x1b[0m"
+    if AUTO_RUN:
+        args = [f"{build_dir}/{bin_name}"]
+        os.execvp(f"{build_dir}/{bin_name}", args)
 
-    printf "\${bold}run release\${reset}\\n"
-    printf "    dest: ./build/release\\n"
-    printf "\\n"
+def main():
+    a: Args = get_args()
 
-    printf "\${bold}run debug\${reset}\\n"
-    printf "    dest: ./build/debug\\n"
-    printf "\\n"
+    if a.help:
+        help()
+        return
 
-    printf "\${bold}run test\${reset}\\n"
-    printf "    dest: ./build/test\\n"
-}
+    build(a)
 
-# arguments -------------------------------------------------------------------
-
-if [ -z "\$1" ]; then
-    build debug
-else
-    case "\$1" in
-        release)
-            build release ;;
-        debug)
-            build debug ;;
-        test)
-            build test ;;
-        help)
-            help ;;
-        *)
-            help; exit 1 ;;
-    esac
-fi
+if __name__ == "__main__":
+    main()
 EOF
 
 chmod +x "$target_dir/run" || {
