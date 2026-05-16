@@ -55,12 +55,6 @@ DATE = f"{datetime.now().strftime("%Y-%m-%d")}"
 
 # program ---------------------------------------------------------------------
 
-def collect_src_files(src: Path) -> list[str]:
-    src_files: list[str] = []
-    for path in src.rglob("*.c"):
-        src_files.append(f"{path}")
-    return src_files
-
 def run_cmd(cmd) -> subprocess.CompletedProcess[str]:
     return subprocess.run(cmd, capture_output=True, text=True)
 
@@ -79,6 +73,10 @@ def get_git_hash(short: bool) -> str:
     if result.returncode != 0:
         return "0".zfill(7)
     return result.stdout.strip()
+
+GIT_V = get_git_vers()
+GIT_HASH_SH = get_git_hash(True)
+GIT_HASH = get_git_hash(False)
 
 def help() -> None:
     bold = "\u001b[1m"
@@ -115,8 +113,8 @@ def get_args() -> Args:
     return a
 
 ENV_FLAGS = [
-        f'-DENV_GITHASH="{get_git_hash(False)}"',
-        f'-DENV_GITTAG="{get_git_vers()}"',
+        f'-DENV_GITHASH="{GIT_HASH}"',
+        f'-DENV_GITTAG="{GIT_V}"',
         f'-DENV_NAME="{PROJ_NAME}"',
         f'-DENV_AUTHOR="{AUTH}"',
         f'-DENV_CONTACT="{AUTH_CONT}"',
@@ -124,11 +122,12 @@ ENV_FLAGS = [
         f"-std={C_STD}",
         ]
 
+def collect_src_files(src: Path) -> list[str]:
+    return [f"{path}" for path in src.rglob("*.c")]
+
 def build(a: Args) -> None:
-    hash = get_git_hash(True)
-    version = get_git_vers()
     build_dir = Path(f"{ROOT}/build/{a.build.value}")
-    bin_name = f"{PROJ_NAME}_{a.build.value}_{DATE}_{version}_{hash}"
+    bin_name = f"{PROJ_NAME}_{a.build.value}_{DATE}_{GIT_V}_{GIT_HASH_SH}"
     c_flags: list[str] = ENV_FLAGS
 
     match a.build:
@@ -142,26 +141,23 @@ def build(a: Args) -> None:
 
     os.makedirs(build_dir, exist_ok=True)
 
-    src_files = collect_src_files(SRC_DIR)
+    build_cmd = c_flags + \
+            collect_src_files(SRC_DIR) + \
+            ["-o", f"{build_dir}/{bin_name}"]
 
-    gcc = ["gcc"] + c_flags + src_files + ["-o", f"{build_dir}/{bin_name}"]
-    clang = ["clang"] + c_flags + src_files + ["-o", f"{build_dir}/{bin_name}"]
-
-    output = run_cmd(gcc)
+    output = run_cmd(["gcc"] + build_cmd)
     if output.returncode != 0:
-        run_cmd(clang)
+        run_cmd(["clang"] + build_cmd)
 
     if AUTO_RUN:
-        args = [f"{build_dir}/{bin_name}"]
-        os.execvp(f"{build_dir}/{bin_name}", args)
+        auto_run_args = [f"{build_dir}/{bin_name}"]
+        os.execvp(f"{build_dir}/{bin_name}", auto_run_args)
 
 def main():
     a: Args = get_args()
-
     if a.help:
         help()
         return
-
     build(a)
 
 if __name__ == "__main__":
