@@ -54,12 +54,26 @@ C_FLAGS_RELEASE = ["-flto", "-O2", "-DNDEBUG", "-Wextra"]
 
 BLD = "\033[1m"
 RST = "\x1b[0m"
-# cmd exec --------------------------------------------------------------------
+
+# classes & types -------------------------------------------------------------
+
+class BuildType(Enum):
+    Release = "release"
+    Debug = "debug"
+    Test = "test"
+
+@dataclass
+class Args:
+    build: BuildType = BuildType.Debug
+    help: bool = False
+    prog: str = ""
 
 @dataclass
 class CmdExec:
     process: subprocess.CompletedProcess[str]
     exec_time: timedelta
+
+# cmd exec --------------------------------------------------------------------
 
 def run_cmd(cmd) -> CmdExec:
     start = datetime.now()
@@ -121,9 +135,7 @@ def build(a: Args) -> None:
 
     os.makedirs(build_dir, exist_ok=True)
 
-    build_cmd = c_flags + \
-            collect_src_files(SRC_DIR) + \
-            ["-o", f"{build_dir}/{bin_name}"]
+    build_cmd = c_flags + collect_src_files(SRC_DIR) + ["-o", f"{build_dir}/{bin_name}"]
 
     try:
         compiler = "gcc"
@@ -133,8 +145,7 @@ def build(a: Args) -> None:
         output = run_cmd([compiler] + build_cmd)
 
     if PRINT_COMPILE_DETAILS:
-        print(f"{a.build.value} via "
-              f"{compiler} ({C_STD}) {output.exec_time}\n")
+        print(f"{a.build.value} via " f"{compiler} ({C_STD}) {output.exec_time}\n")
 
     if AUTO_RUN:
         env = os.environ.copy()
@@ -146,27 +157,18 @@ def build(a: Args) -> None:
 # main ------------------------------------------------------------------------
 
 def help() -> None:
-    print(f"{BLD}run release{RST}\n"
-          f"-> ./build/release\n"
-          f"{BLD}run debug{RST}\n"
-          f"-> ./build/debug\n"
-          f"{BLD}run test{RST}\n"
-          f"-> ./build/test")
-
-class BuildType(Enum):
-    Release = "release"
-    Debug = "debug"
-    Test = "test"
-
-@dataclass
-class Args:
-    build: BuildType = BuildType.Debug
-    help: bool = False
-    prog: str = ""
+    print(
+            f"{BLD}run release{RST}\n"
+            f"-> ./build/release\n"
+            f"{BLD}run debug{RST}\n"
+            f"-> ./build/debug\n"
+            f"{BLD}run test{RST}\n"
+            f"-> ./build/test"
+            )
 
 def get_args() -> Args:
     a: Args = Args()
-    a.prog = sys.argv[0].rsplit('/')[-1]
+    a.prog = sys.argv[0].rsplit("/")[-1]
     for arg in sys.argv:
         match arg:
             case r if r.startswith("r"):
