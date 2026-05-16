@@ -32,7 +32,7 @@ PROJ_NAME = ROOT.name
 PROJ_REPO = f"https://github.com/simon-danielsson/{PROJ_NAME}"
 AUTH = "Simon Danielsson"
 AUTH_CONT = "contact@simondanielsson.se"
-C_STD = "gnu2x"
+C_STD = "gnu23"
 
 AUTO_RUN = True
 PRINT_COMPILE_DETAILS = True
@@ -138,10 +138,10 @@ def build(a: Args) -> None:
     build_cmd = c_flags + collect_src_files(SRC_DIR) + ["-o", f"{build_dir}/{bin_name}"]
 
     try:
-        compiler = "gcc"
+        compiler = "clang"
         output = run_cmd([compiler] + build_cmd)
     except FileNotFoundError:
-        compiler = "clang"
+        compiler = "gcc"
         output = run_cmd([compiler] + build_cmd)
 
     if PRINT_COMPILE_DETAILS:
