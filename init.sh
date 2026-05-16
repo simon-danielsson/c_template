@@ -141,9 +141,7 @@ def build(a: Args) -> None:
 
     os.makedirs(build_dir, exist_ok=True)
 
-    build_cmd = c_flags + \\
-            collect_src_files(SRC_DIR) + \\
-            ["-o", f"{build_dir}/{bin_name}"]
+    build_cmd = c_flags + collect_src_files(SRC_DIR) + ["-o", f"{build_dir}/{bin_name}"]
 
     output = run_cmd(["gcc"] + build_cmd)
     if output.returncode != 0:
