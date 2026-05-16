@@ -19,7 +19,6 @@ mkdir -p "$target_dir"; touch "$target_dir/run.py"
 cat > "$target_dir/run.py" <<EOF
 #!/usr/bin/env python3
 
-from re import DEBUG
 import subprocess, sys, os
 from pathlib import Path
 from datetime import datetime, timedelta
