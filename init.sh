@@ -19,13 +19,11 @@ mkdir -p "$target_dir"; touch "$target_dir/run"
 cat > "$target_dir/run" <<EOF
 #!/usr/bin/env python3
 
+import subprocess, sys, os
 from pathlib import Path
-from datetime import datetime
+from datetime import datetime, timedelta
 from dataclasses import dataclass
 from enum import Enum
-import subprocess
-import sys
-import os
 
 ROOT = Path(__file__).parent.resolve()
 SRC_DIR = Path(f"{ROOT}/src")
@@ -36,6 +34,7 @@ AUTH_CONT = "contact@simondanielsson.se"
 C_STD = "gnu23"
 
 AUTO_RUN = True
+PRINT_COMPILE_TIME = True
 
 C_FLAGS_DEBUG = [
         "-g",
@@ -51,28 +50,35 @@ C_FLAGS_DEBUG = [
 
 C_FLAGS_RELEASE = ["-flto", "-O2", "-DNDEBUG", "-Wextra"]
 
-DATE = f"{datetime.now().strftime("%Y-%m-%d")}"
-
 # program ---------------------------------------------------------------------
 
-def run_cmd(cmd) -> subprocess.CompletedProcess[str]:
-    return subprocess.run(cmd, capture_output=True, text=True)
+@dataclass
+class BuildCmd:
+    process: subprocess.CompletedProcess[str]
+    exec_time: timedelta
+
+def run_cmd(cmd) -> BuildCmd:
+    start = datetime.now()
+    process = subprocess.run(cmd, capture_output=True, text=True)
+    end = datetime.now()
+    exec_time = end - start
+    return BuildCmd(exec_time=exec_time, process=process)
 
 def get_git_vers() -> str:
     cmd = ["git", "describe", "--tags", "--abbrev=0"]
     result = run_cmd(cmd)
-    if result.returncode != 0:
+    if result.process.returncode != 0:
         return "v0.0.0"
-    return result.stdout.strip()
+    return result.process.stdout.strip()
 
 def get_git_hash(short: bool) -> str:
     cmd = ["git", "rev-parse", "HEAD"]
     if short:
         cmd.insert(2, "--short")
     result = run_cmd(cmd)
-    if result.returncode != 0:
+    if result.process.returncode != 0:
         return "0".zfill(7)
-    return result.stdout.strip()
+    return result.process.stdout.strip()
 
 GIT_V = get_git_vers()
 GIT_HASH_SH = get_git_hash(True)
@@ -127,7 +133,7 @@ def collect_src_files(src: Path) -> list[str]:
 
 def build(a: Args) -> None:
     build_dir = Path(f"{ROOT}/build/{a.build.value}")
-    bin_name = f"{PROJ_NAME}_{a.build.value}_{DATE}_{GIT_V}_{GIT_HASH_SH}"
+    bin_name = f"{PROJ_NAME}_{a.build.value}_{GIT_V}_{GIT_HASH_SH}"
     c_flags: list[str] = ENV_FLAGS
 
     match a.build:
@@ -141,11 +147,19 @@ def build(a: Args) -> None:
 
     os.makedirs(build_dir, exist_ok=True)
 
-    build_cmd = c_flags + collect_src_files(SRC_DIR) + ["-o", f"{build_dir}/{bin_name}"]
+    build_cmd = c_flags + \
+            collect_src_files(SRC_DIR) + \
+            ["-o", f"{build_dir}/{bin_name}"]
 
-    output = run_cmd(["gcc"] + build_cmd)
-    if output.returncode != 0:
-        run_cmd(["clang"] + build_cmd)
+    compiler = "gcc"
+    if run_cmd([compiler, "-v"]).process.returncode == 0:
+        output = run_cmd([compiler] + build_cmd)
+    else:
+        compiler = "clang"
+        output = run_cmd([compiler] + build_cmd)
+
+    if PRINT_COMPILE_TIME:
+        print(f"compile time ({compiler}): {output.exec_time}")
 
     if AUTO_RUN:
         auto_run_args = [f"{build_dir}/{bin_name}"]
