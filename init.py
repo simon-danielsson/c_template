@@ -15,9 +15,7 @@ def msg(msg: str, type: MsgType):
         case type.ERR:
             sys.stderr.write(f"{type.value}{msg}{MsgType.STD.value}\n")
             exit(1)
-        case type.STD:
-            sys.stdout.write(f"{msg}\n")
-        case type.FIN:
+        case type.STD | type.FIN:
             sys.stdout.write(f"{type.value}{msg}{MsgType.STD.value}\n")
 
 @dataclass
