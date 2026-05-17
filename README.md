@@ -48,12 +48,17 @@ run() {
 }
 
 cinit() {
-    curl -O https://raw.githubusercontent.com/simon-danielsson/c_template/refs/heads/main/init.sh || {
-        error "failed to curl init.sh"
+    file="init.py"
+    curl -O https://raw.githubusercontent.com/simon-danielsson/c_template/refs/heads/main/"$file" || {
+        error "failed to curl $file"
     }
-    chmod +x ./init.sh
-    ./init.sh $1
-    rm init.sh
+    curl -O https://raw.githubusercontent.com/simon-danielsson/c_template/refs/heads/main/cinit_temp || {
+        error "failed to curl temp files"
+    }
+    chmod +x ./"$file"
+    ./"$file" $1
+    rm "$file"
+    rm -rf cinit_temp
 }
 ```
   
