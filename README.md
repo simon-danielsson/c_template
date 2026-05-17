@@ -50,15 +50,15 @@ run() {
 cinit() {
     file="init.py"
     curl -O https://raw.githubusercontent.com/simon-danielsson/c_template/refs/heads/main/"$file" || {
-        error "failed to curl $file"
+        echo "failed to curl $file" >&2
+        exit 1
     }
-    curl -O https://raw.githubusercontent.com/simon-danielsson/c_template/refs/heads/main/cinit_temp || {
-        error "failed to curl temp files"
-    }
+    curl -L https://github.com/simon-danielsson/c_template/archive/refs/heads/main.tar.gz \
+    | tar -xz --strip-components=1 c_template-main/cinit_temp
     chmod +x ./"$file"
     ./"$file" $1
-    rm "$file"
-    rm -rf cinit_temp
+    command rm "$file"
+    command rm -rf cinit_temp
 }
 ```
   
