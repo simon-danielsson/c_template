@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-import subprocess, sys, os, shutil
+import subprocess, sys, shutil
 from dataclasses import dataclass
 from pathlib import Path
 from enum import Enum
@@ -10,13 +10,13 @@ class MsgType(Enum):
     STD = "\033[0m"
     FIN = "\033[1;32m"
 
-def msg(msg: str, type: MsgType):
-    match type:
-        case type.ERR:
-            sys.stderr.write(f"{type.value}{msg}{MsgType.STD.value}\n")
+def msg(msg: str, t: MsgType):
+    match t:
+        case MsgType.ERR:
+            sys.stderr.write(f"{t.value}{msg}{MsgType.STD.value}\n")
             exit(1)
-        case type.STD | type.FIN:
-            sys.stdout.write(f"{type.value}{msg}{MsgType.STD.value}\n")
+        case MsgType.STD | MsgType.FIN:
+            sys.stdout.write(f"{t.value}{msg}{MsgType.STD.value}\n")
 
 @dataclass
 class Init:
@@ -30,11 +30,11 @@ def write_readme(proj_name: str, p: Path):
 
 def write_git_ignore(p: Path):
     with open(p.absolute(), "w", encoding="utf-8") as f:
-        f.write(f"nvim.log")
-        f.write(f"/build")
-        f.write(f"/build/*")
-        f.write(f".DS_Store")
-        f.write(f"*.o")
+        f.write("nvim.log\n")
+        f.write("/build\n")
+        f.write("/build/*\n")
+        f.write(".DS_Store\n")
+        f.write("*.o\n")
 
 def get_project_proj_name() -> str:
     try:
@@ -44,7 +44,7 @@ def get_project_proj_name() -> str:
         return ""
 
 def write_files(i: Init):
-    os.makedirs(i.tgt_dir, exist_ok=True)
+    i.tgt_dir.mkdir(parents=True, exist_ok=True)
     write_readme(i.proj_name, i.tgt_dir.joinpath("README.md"))
     write_git_ignore(i.tgt_dir.joinpath(".gitignore"))
 
