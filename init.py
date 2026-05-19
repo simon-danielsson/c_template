@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 import subprocess, sys, shutil
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from pathlib import Path
 from enum import Enum
 
@@ -18,15 +18,34 @@ def msg(msg: str, t: MsgType):
         case MsgType.STD | MsgType.FIN:
             sys.stdout.write(f"{t.value}{msg}{MsgType.STD.value}\n")
 
+def get_project_proj_name() -> str:
+    try:
+        return sys.argv[1].strip()
+    except IndexError:
+        msg("No argument was given", MsgType.ERR)
+        return ""
+
+def get_project_descr() -> str:
+    try:
+        return sys.argv[2].strip()
+    except:
+        return ""
+
 @dataclass
 class Init:
-    proj_name: str = ""
+    proj_name: str = field(default_factory=get_project_proj_name)
+    proj_descr: str = field(default_factory=get_project_descr)
     tgt_dir: Path = Path(".")
-    src_dir: Path = Path("./cinit_temp")
+    src_dir: Path = field(init=False)
 
-def write_readme(proj_name: str, p: Path):
+    def __post_init__(self):
+        self.tgt_dir = self.tgt_dir.joinpath(self.proj_name)
+
+def write_readme(proj_name: str, proj_descr: str, p: Path):
     with open(p.absolute(), "w", encoding="utf-8") as f:
-        f.write(f"# {proj_name}")
+        f.write(f"# {proj_name}\n")
+        f.write(f"\n## {proj_name}\n")
+        f.write(f"{proj_descr}")
 
 def write_git_ignore(p: Path):
     with open(p.absolute(), "w", encoding="utf-8") as f:
@@ -36,16 +55,9 @@ def write_git_ignore(p: Path):
         f.write(".DS_Store\n")
         f.write("*.o\n")
 
-def get_project_proj_name() -> str:
-    try:
-        return sys.argv[1].strip()
-    except IndexError:
-        msg("No argument was given", MsgType.ERR)
-        return ""
-
 def write_files(i: Init):
     i.tgt_dir.mkdir(parents=True, exist_ok=True)
-    write_readme(i.proj_name, i.tgt_dir.joinpath("README.md"))
+    write_readme(i.proj_name, i.proj_descr, i.tgt_dir.joinpath("README.md"))
     write_git_ignore(i.tgt_dir.joinpath(".gitignore"))
 
     try:
@@ -75,8 +87,6 @@ def init_git(i: Init):
 def main():
     msg("Initializing program...", MsgType.STD)
     i: Init = Init()
-    i.proj_name = get_project_proj_name()
-    i.tgt_dir = Path(".").joinpath(i.proj_name)
 
     msg("Writing and copying files...", MsgType.STD)
     write_files(i)

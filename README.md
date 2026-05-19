@@ -70,10 +70,12 @@ cinit() {
 ### Creating a new project
     
 Run `cinit` with the name of your new project as an argument. A new project
-folder will be created in the current directory.
+folder will be created in the current directory. (You can also add a project
+description enclosed in double quotes - this will then be added to the generated
+README file.)
    
 ``` bash
-cinit <project-name>
+cinit <project-name> ["description"]
 ```
   
 The generated project will have the following hierarchy:  
