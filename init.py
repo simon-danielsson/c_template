@@ -40,7 +40,8 @@ class Init:
     src_dir: Path = field(init=False)
 
     def __post_init__(self):
-        self.src_dir = self.tgt_dir / self.proj_name
+        self.tgt_dir = Path(self.proj_name)
+        self.src_dir = Path("template")
 
 def write_readme(proj_name: str, proj_descr: str, p: Path):
     with open(p.absolute(), "w", encoding="utf-8") as f:
