@@ -27,7 +27,7 @@ def get_project_proj_name() -> str:
 
 def get_project_descr() -> str:
     try:
-        return sys.argv[2].strip()
+        return sys.argv[2]
     except:
         return ""
 
@@ -44,9 +44,8 @@ class Init:
 
 def write_readme(proj_name: str, proj_descr: str, p: Path):
     with open(p.absolute(), "w", encoding="utf-8") as f:
-        f.write(f"# {proj_name}\n")
-        f.write(f"\n## {proj_name}\n")
-        f.write(f"{proj_descr}")
+        f.write(f"## {proj_name}\n")
+        f.write(f"\n{proj_descr}")
 
 def write_git_ignore(p: Path):
     with open(p.absolute(), "w", encoding="utf-8") as f:

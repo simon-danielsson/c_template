@@ -56,7 +56,7 @@ cinit() {
     curl -L https://github.com/simon-danielsson/c_template/archive/refs/heads/main.tar.gz \
     | tar -xz --strip-components=1 c_template-main/cinit_temp
     chmod +x ./"$file"
-    ./"$file" $1
+    ./"$file" $1 "$2"
     command rm "$file"
     command rm -rf cinit_temp
 }
@@ -70,7 +70,7 @@ cinit() {
 ### Creating a new project
     
 Run `cinit` with the name of your new project as an argument. A new project
-folder will be created in the current directory. (You can also add a project
+folder will be created in the current directory. (You can also add an optional project
 description enclosed in double quotes - this will then be added to the generated
 README file.)
    
