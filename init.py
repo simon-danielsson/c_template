@@ -37,11 +37,10 @@ class Init:
     proj_descr: str = field(default_factory=get_project_descr)
 
     tgt_dir: Path = Path(".")
-    src_dir: Path = field(init=False)
+    src_dir = Path("./cinit_temp")
 
     def __post_init__(self):
         self.tgt_dir = Path(self.proj_name)
-        self.src_dir = Path("template")
 
 def write_readme(proj_name: str, proj_descr: str, p: Path):
     with open(p.absolute(), "w", encoding="utf-8") as f:
@@ -64,8 +63,8 @@ def write_files(i: Init):
 
     try:
         shutil.copytree(src=i.src_dir, dst=i.tgt_dir, dirs_exist_ok=True)
-    except Exception:
-        msg("Error whilst copying files", MsgType.ERR)
+    except Exception as e:
+        msg(f"Error whilst copying files: {e}", MsgType.ERR)
 
 def run_cmd(cmd: list[str], cwd: str) -> subprocess.CompletedProcess[str]:
     process = subprocess.run(
