@@ -35,11 +35,12 @@ def get_project_descr() -> str:
 class Init:
     proj_name: str = field(default_factory=get_project_proj_name)
     proj_descr: str = field(default_factory=get_project_descr)
+
     tgt_dir: Path = Path(".")
     src_dir: Path = field(init=False)
 
     def __post_init__(self):
-        self.tgt_dir = self.tgt_dir.joinpath(self.proj_name)
+        self.src_dir = self.tgt_dir / self.proj_name
 
 def write_readme(proj_name: str, proj_descr: str, p: Path):
     with open(p.absolute(), "w", encoding="utf-8") as f:
