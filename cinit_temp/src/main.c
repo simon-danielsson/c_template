@@ -1,6 +1,6 @@
 #include "main.h"
 
-i32 main(void) {
-    printf("Hello, %s!\n", ENV_AUTHOR);
+i32 main(i32 argv, char **argc) {
+    printf("%s\n", ENV_NAME);
     return 0;
 }
