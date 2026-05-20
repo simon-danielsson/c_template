@@ -9,27 +9,28 @@ import platform
 
 ROOT = Path(__file__).parent.resolve()
 SRC_DIR = Path(f"{ROOT}/src")
-PROJ_NAME = ROOT.name
-PROJ_REPO = f"https://github.com/simon-danielsson/{PROJ_NAME}"
-AUTH = "Simon Danielsson"
-AUTH_CONT = "contact@simondanielsson.se"
-C_STD = "gnu23"
+PROJ_NAME = ROOT.name  # env var
+PROJ_REPO = f"https://github.com/simon-danielsson/{PROJ_NAME}"  # env var
+AUTH = "Simon Danielsson"  # env var
+AUTH_CONT = "contact@simondanielsson.se"  # env var
+C_STD = "gnu23"  # c standard used to compile program
 
-AUTO_RUN = True
-PRINT_COMPILE_DETAILS = True
+AUTO_RUN = True  # if true, run binary after compile
+AUTO_RUN_ARGS = []  # program args used at auto run
+PRINT_COMPILE_DETAILS = True  # build-type, compiler, compile time
 
-C_FLAGS_DEBUG = [
-        "-O0",
-        "-DDEBUG",
-        "-fsanitize=address",
-        "-fsanitize=undefined",
-        "-fno-omit-frame-pointer",
-        "-Wall",
-        "-Wextra",
-        "-Wpedantic",
-        "-Wshadow",
-        "-Werror=format-security",
-        ]
+C_FLAGS_DEBUG = [  # used for both debug and test builds
+                 "-O0",
+                 "-DDEBUG",
+                 "-fsanitize=address",
+                 "-fsanitize=undefined",
+                 "-fno-omit-frame-pointer",
+                 "-Wall",
+                 "-Wextra",
+                 "-Wpedantic",
+                 "-Wshadow",
+                 "-Werror=format-security",
+                 ]
 
 C_FLAGS_RELEASE = ["-flto", "-O2", "-DNDEBUG", "-Wextra"]
 
@@ -137,7 +138,7 @@ def build(a: Args) -> None:
         if platform.system() == "Darwin":
             env["MallocNanoZone"] = "0"
         exe_path = (build_dir / bin_name).resolve()
-        os.execvpe(str(exe_path), [str(exe_path)], env)
+        os.execvpe(str(exe_path), [str(exe_path)] + AUTO_RUN_ARGS, env)
 
 # main ------------------------------------------------------------------------
 
