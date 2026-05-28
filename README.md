@@ -84,6 +84,7 @@ The generated project will have the following hierarchy:
 (root)
 ├── .git
 ├── .gitignore
+├── .clangd
 ├── LICENSE
 ├── README.md
 ├── run.py
