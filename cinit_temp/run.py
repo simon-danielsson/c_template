@@ -26,13 +26,12 @@ C_FLAGS_DEBUG = [  # used for both debug and test builds
                  "-fsanitize=undefined",
                  "-fno-omit-frame-pointer",
                  "-Wall",
-                 "-Wextra",
                  "-Wpedantic",
                  "-Wshadow",
                  "-Werror=format-security",
                  ]
 
-C_FLAGS_RELEASE = ["-flto", "-O2", "-DNDEBUG", "-Wextra"]
+C_FLAGS_RELEASE = ["-flto", "-O2", "-DNDEBUG"]
 
 BLD = "\033[1m"
 RST = "\x1b[0m"

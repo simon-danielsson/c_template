@@ -37,18 +37,6 @@ typedef uint64_t u64;
 typedef float f32;
 typedef double f64;
 
-// suppress warnings ----------------------------------------------------------
-
-#if defined(__clang__)
-#pragma clang diagnostic ignored "-Wunused-variable"
-#pragma clang diagnostic ignored "-Wunused-but-set-variable"
-#pragma clang diagnostic ignored "-Wunused-function"
-#elif defined(__GNUC__)
-#pragma GCC diagnostic ignored "-Wunused-variable"
-#pragma GCC diagnostic ignored "-Wunused-but-set-variable"
-#pragma GCC diagnostic ignored "-Wunused-function"
-#endif
-
 // project variables ----------------------------------------------------------
 
 #ifndef ENV_NAME // project name
