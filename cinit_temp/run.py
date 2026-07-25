@@ -58,6 +58,7 @@ RST = "\x1b[0m"
 class BuildType(Enum):
     Release = "release"
     Debug = "debug"
+    Test = "test"
     Install = "install"
 
 @dataclass
@@ -124,8 +125,10 @@ def build(a: Args) -> None:
     c_flags: list[str] = ENV_FLAGS
 
     match a.build:
-        case BuildType.Debug:
+        case BuildType.Test:
             c_flags = c_flags + C_FLAGS_DEBUG + [f"-DTEST={a.test_n}"]
+        case BuildType.Debug:
+            c_flags = c_flags + C_FLAGS_DEBUG
         case BuildType.Release:
             c_flags = c_flags + C_FLAGS_RELEASE
         case BuildType.Install:
@@ -172,6 +175,8 @@ def help() -> None:
             f"-> ./build/debug\n"
             f"{BLD}run install{RST}\n"
             f"-> ./build/install"
+            f"{BLD}run test --test=<num>{RST}\n"
+            f"-> ./build/test"
             )
 
 def get_args() -> Args:
@@ -183,6 +188,8 @@ def get_args() -> Args:
                 a.test_n = int(arg[7:])
             case r if r.startswith("r"):
                 a.build = BuildType.Release
+            case r if r.startswith("t"):
+                a.build = BuildType.Test
             case d if d.startswith("d"):
                 a.build = BuildType.Debug
             case t if t.startswith("i"):

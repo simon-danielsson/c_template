@@ -9,8 +9,10 @@ static const test_fn tests[] = {
 };
 static void run_test(int n) {
     size_t count = sizeof(tests) / sizeof(tests[0]);
-    if (n > 0 && (size_t)n < count && tests[n])
+    if (n > 0 && (size_t)n < count && tests[n]) {
         tests[n]();
+        exit(0);
+    }
 }
 
 int main(int argc, char **argv) {
