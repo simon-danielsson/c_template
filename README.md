@@ -17,13 +17,25 @@
 
 ## Info
   
-This is my template for initializing, building, running, as well as maintaining C projects without any third-party build-system. Built to be quick and easy to use on both MacOS and Linux.  
+### General
+  
+This is my opinionated template for initializing, building, and maintaining C projects. Batteries included - powered by a tiny suite of python tools. Set up to be quick and easy to use on both MacOS and Linux.  
+  
+> [!INFO]
+> This template is set up specifically for me. If adopting this system yourself: expect to do bit of extra setup.
+  
+### Features
+- Ultra portable
+- Bundled build-system ([run.py](./cinit_temp/run.py))
+- Bundled tool for snapshot tests ([bark.py](https://github.com/simon-danielsson/bark.py))
+- Bundled tool for embedding static files (not essential for c23) ([bedh.py](https://github.com/simon-danielsson/bedh.py))
+- Project environment variables (inspired by [uv](https://github.com/astral-sh/uv) and [cargo](https://github.com/rust-lang/cargo))
   
 ### Requirements
 - Unix system
 - GCC or Clang
 - Python (3.10+)
-
+  
 <div id="install"></div>
   
 ## Install
