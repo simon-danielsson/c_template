@@ -21,7 +21,7 @@
   
 This is my opinionated template for initializing, building, and maintaining C projects. Batteries included - powered by a tiny suite of python tools. Set up to be quick and easy to use on both MacOS and Linux.  
   
-> [!INFO]
+> [!IMPORTANT]
 > This template is set up specifically for me. If adopting this system yourself: expect to do bit of extra setup.
   
 ### Features
