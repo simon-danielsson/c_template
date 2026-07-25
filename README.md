@@ -47,7 +47,10 @@ run() {
     return 1
 }
 
+
+
 cinit() {
+    set -x
     local _cinit_dst="$(pwd)"
     file="init.py"
     curl -O https://raw.githubusercontent.com/simon-danielsson/c_template/refs/heads/main/"$file" || {
@@ -60,13 +63,30 @@ cinit() {
     ./"$file" $1 "$2"
     command rm "$file"
     command rm -rf cinit_temp
-    cd "$_cinit_dst"/$1/src/tests
+    cd "$_cinit_dst"/"$1"/tests
     curl -O https://raw.githubusercontent.com/simon-danielsson/bark.py/refs/heads/main/bark.py || {
         echo "failed to curl bark.py" >&2
         exit 1
     }
+    mkdir -p "$_cinit_dst"/"$1"/src/static
+    cd "$_cinit_dst"/"$1"/src/static
+    curl -O https://raw.githubusercontent.com/simon-danielsson/bedh.py/refs/heads/main/bedh.py || {
+        echo "failed to curl bedh.py" >&2
+        exit 1
+    }
+    set +x
+    cd "$_cinit_dst"/"$1"
+
+    # git
+    git init -b main
+    git add --all
+    git commit -m init
+    git tag v0.1.0
+
     cd "$_cinit_dst"
+
 }
+
 ```
   
 ---

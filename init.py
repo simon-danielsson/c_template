@@ -110,15 +110,6 @@ def run_cmd(cmd: list[str], cwd: str) -> subprocess.CompletedProcess[str]:
             )
     return process
 
-def init_git(i: Init):
-    if i.tgt_dir.exists():
-        run_cmd(["git", "init", "-b", "main"], cwd=f"{i.tgt_dir.absolute()}")
-        run_cmd(["git", "add", "--all"], cwd=f"{i.tgt_dir.absolute()}")
-        run_cmd(["git", "commit", "-m", "init"], cwd=f"{i.tgt_dir.absolute()}")
-        run_cmd(["git", "tag", "v0.1.0"], cwd=f"{i.tgt_dir.absolute()}")
-    else:
-        msg("Couldn't initialize git - project dir not found.", MsgType.ERR)
-
 def main():
     msg("Initializing program...", MsgType.STD)
     i: Init = Init()
@@ -126,10 +117,8 @@ def main():
     msg("Writing and copying files...", MsgType.STD)
     write_files(i)
 
-    msg("Initializing git...", MsgType.STD)
-    init_git(i)
-
     msg(f'"{i.proj_name}" was successfully generated', MsgType.FIN)
+    msg(f"Initializing tooling initializing git...", MsgType.STD)
 
 if __name__ == "__main__":
     main()
