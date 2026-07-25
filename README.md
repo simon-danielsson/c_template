@@ -21,7 +21,7 @@ This is my template for initializing, building, running, as well as maintaining 
   
 ### Requirements
 - Unix system
-- GCC/Clang
+- GCC or Clang
 - Python (3.10+)
 
 <div id="install"></div>
@@ -48,6 +48,7 @@ run() {
 }
 
 cinit() {
+    local _cinit_dst="$(pwd)"
     file="init.py"
     curl -O https://raw.githubusercontent.com/simon-danielsson/c_template/refs/heads/main/"$file" || {
         echo "failed to curl $file" >&2
@@ -59,6 +60,12 @@ cinit() {
     ./"$file" $1 "$2"
     command rm "$file"
     command rm -rf cinit_temp
+    cd "$_cinit_dst"/$1/src/tests
+    curl -O https://raw.githubusercontent.com/simon-danielsson/bark.py/refs/heads/main/bark.py || {
+        echo "failed to curl bark.py" >&2
+        exit 1
+    }
+    cd "$_cinit_dst"
 }
 ```
   
@@ -82,40 +89,23 @@ The generated project will have the following hierarchy:
   
 ``` terminal
 (root)
-├── .git
-├── .gitignore
 ├── .clangd
 ├── LICENSE
 ├── README.md
 ├── run.py
-└── src
-    ├── main.c
-    └── main.h
+├── src
+│  ├── main.c
+│  └── main.h
+└── tests
+   ├── bark.py
+   ├── bark_test
+   ├── tests.c
+   └── tests.h
 ```
-  
-Study the contents of the generated `run.py` script, as well as `main.h`, to
-understand how everything is wired.  
   
 ### Running tests
    
-The bulk of testing in my programs consist of short inline unit tests. These are ran from within the main `./src` directory via a compiler flag `-DTEST` which will be defined as true when you execute `run test`. You will need to decide on your own how to organize tests in your code. See the following example:  
-  
-``` c
-#include "main.h"
-#include "tests.h"
-
-i32 main(void) {
-    if (BUILD_TEST) { // true only if command "run test"
-        LOG("Test 1"); test1();
-        LOG("Test 2"); test2();
-        LOG("Test 3"); test3();
-        return 0;
-    }
-
-    printf("This is the main program");
-    return 0;
-}
-```
+Tests are ran using a bundled copy of [bark.py](https://github.com/simon-danielsson/bark.py) - for more information, visit its page on github and read more about it there.
   
 ### CLI commands (run.py)
   
@@ -123,7 +113,7 @@ i32 main(void) {
 run help
 run debug
 run release
-run test
+run install
 ```
   
 ---

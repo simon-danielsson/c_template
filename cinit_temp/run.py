@@ -9,27 +9,28 @@ import platform
 
 ROOT = Path(__file__).parent.resolve()
 SRC_DIR = Path(f"{ROOT}/src")
+TESTS_DIR = Path(f"{ROOT}/tests")
 PROJ_NAME = ROOT.name  # env var
 PROJ_REPO = f"https://github.com/simon-danielsson/{PROJ_NAME}"  # env var
 AUTH = "Simon Danielsson"  # env var
 AUTH_CONT = "contact@simondanielsson.se"  # env var
-C_STD = "gnu23"  # c standard used to compile program
+C_STD = "c99"  # c standard used to compile program
 
 AUTO_RUN = True  # if true, run binary after compile
-AUTO_RUN_ARGS = []  # program args used at auto run
+AUTO_RUN_ARGS = ""  # program args used at auto run
 PRINT_COMPILE_DETAILS = True  # build-type, compiler, compile time
 
-C_FLAGS_DEBUG = [  # used for both debug and test builds
-                 "-O0",
-                 "-DDEBUG",
-                 "-fsanitize=address",
-                 "-fsanitize=undefined",
-                 "-fno-omit-frame-pointer",
-                 "-Wall",
-                 "-Wpedantic",
-                 "-Wshadow",
-                 "-Werror=format-security",
-                 ]
+C_FLAGS_DEBUG = [
+        "-O0",
+        "-DDEBUG",
+        "-fsanitize=address",
+        "-fsanitize=undefined",
+        "-fno-omit-frame-pointer",
+        "-Wall",
+        "-Wpedantic",
+        "-Wshadow",
+        "-Werror=format-security",
+        ]
 
 C_FLAGS_RELEASE = ["-flto", "-O2", "-DNDEBUG"]
 
@@ -41,13 +42,14 @@ RST = "\x1b[0m"
 class BuildType(Enum):
     Release = "release"
     Debug = "debug"
-    Test = "test"
+    Install = "install"
 
 @dataclass
 class Args:
     build: BuildType = BuildType.Debug
     help: bool = False
     prog: str = ""
+    test_n: int = 0
 
 @dataclass
 class CmdExec:
@@ -107,16 +109,21 @@ def build(a: Args) -> None:
 
     match a.build:
         case BuildType.Debug:
-            c_flags = c_flags + C_FLAGS_DEBUG
+            c_flags = c_flags + C_FLAGS_DEBUG + [f"-DTEST={a.test_n}"]
         case BuildType.Release:
             c_flags = c_flags + C_FLAGS_RELEASE
-        case BuildType.Test:
-            c_flags.append("-DTEST")
-            c_flags = c_flags + C_FLAGS_DEBUG
+        case BuildType.Install:
+            c_flags = c_flags + C_FLAGS_RELEASE
+            bin_name = f"{PROJ_NAME}"
 
     os.makedirs(build_dir, exist_ok=True)
 
-    build_cmd = c_flags + collect_src_files(SRC_DIR) + ["-o", f"{build_dir}/{bin_name}"]
+    build_cmd = (
+            c_flags
+            + collect_src_files(SRC_DIR)
+            + collect_src_files(TESTS_DIR)
+            + ["-o", f"{build_dir}/{bin_name}"]
+            )
 
     try:
         compiler = "clang"
@@ -128,7 +135,7 @@ def build(a: Args) -> None:
     if PRINT_COMPILE_DETAILS:
         print(f"{a.build.value} via " f"{compiler} ({C_STD}) {output.exec_time}")
 
-    if AUTO_RUN:
+    if AUTO_RUN and a.build != BuildType.Install:
         if output.process.returncode != 0:
             print(output.process.stderr)
             sys.exit(output.process.returncode)
@@ -137,7 +144,7 @@ def build(a: Args) -> None:
         if platform.system() == "Darwin":
             env["MallocNanoZone"] = "0"
         exe_path = (build_dir / bin_name).resolve()
-        os.execvpe(str(exe_path), [str(exe_path)] + AUTO_RUN_ARGS, env)
+        os.execvpe(str(exe_path), [str(exe_path)] + AUTO_RUN_ARGS.split(" "), env)
 
 # main ------------------------------------------------------------------------
 
@@ -147,8 +154,8 @@ def help() -> None:
             f"-> ./build/release\n"
             f"{BLD}run debug{RST}\n"
             f"-> ./build/debug\n"
-            f"{BLD}run test{RST}\n"
-            f"-> ./build/test"
+            f"{BLD}run install{RST}\n"
+            f"-> ./build/install"
             )
 
 def get_args() -> Args:
@@ -156,12 +163,14 @@ def get_args() -> Args:
     a.prog = sys.argv[0].rsplit("/")[-1]
     for arg in sys.argv:
         match arg:
+            case r if r.startswith("--test="):
+                a.test_n = int(arg[7:])
             case r if r.startswith("r"):
                 a.build = BuildType.Release
             case d if d.startswith("d"):
                 a.build = BuildType.Debug
-            case t if t.startswith("t"):
-                a.build = BuildType.Test
+            case t if t.startswith("i"):
+                a.build = BuildType.Install
             case h if h.startswith("h"):
                 a.help = True
     return a

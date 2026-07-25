@@ -9,11 +9,10 @@
 #define BUILD_DEBUG 1
 #endif
 
-#if defined(TEST)
-#define BUILD_TEST 1
-#else
-#define BUILD_TEST 0
+#ifndef TEST
+#define TEST 0
 #endif
+#include "../tests/tests.h"
 
 // standard libraries ---------------------------------------------------------
 
