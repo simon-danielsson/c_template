@@ -126,7 +126,9 @@ The generated project will have the following hierarchy:
 ├── run.py
 ├── src
 │  ├── main.c
-│  └── main.h
+│  ├── main.h
+│  └── static
+│     └── bedh.py
 └── tests
    ├── bark.py
    ├── bark_test
