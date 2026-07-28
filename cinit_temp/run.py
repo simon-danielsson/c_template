@@ -33,7 +33,7 @@ AUTH_CONT = "contact@simondanielsson.se"  # env var
 C_STD = "c99"  # c standard used to compile program
 
 AUTO_RUN = True  # if true, run binary after compile
-AUTO_RUN_ARGS = ""  # program args used at auto run
+AUTO_RUN_ARGS = []  # program args used at auto run
 PRINT_COMPILE_DETAILS = True  # build-type, compiler, compile time
 
 C_FLAGS_DEBUG = [
@@ -63,6 +63,7 @@ class BuildType(Enum):
 
 @dataclass
 class Args:
+    runargs: list[str]
     build: BuildType = BuildType.Debug
     help: bool = False
     prog: str = ""
@@ -163,7 +164,7 @@ def build(a: Args) -> None:
         if platform.system() == "Darwin":
             env["MallocNanoZone"] = "0"
         exe_path = (build_dir / bin_name).resolve()
-        os.execvpe(str(exe_path), [str(exe_path)] + AUTO_RUN_ARGS.split(" "), env)
+        os.execvpe(str(exe_path), [str(exe_path)] + AUTO_RUN_ARGS + a.runargs, env)
 
 # main ------------------------------------------------------------------------
 
@@ -180,22 +181,37 @@ def help() -> None:
             )
 
 def get_args() -> Args:
-    a: Args = Args()
+    a: Args = Args(runargs=[])
     a.prog = sys.argv[0].rsplit("/")[-1]
-    for arg in sys.argv:
+    count = 0
+    while count < len(sys.argv):
+        arg = sys.argv[count]
         match arg:
-            case r if r.startswith("--test="):
+            case t if t.startswith("--test="):
                 a.test_n = int(arg[7:])
+                break
+            case runarg if runarg.startswith("--"):
+                count += 1
+                for ra in sys.argv[count:]:
+                    a.runargs.append(ra)
+                break
             case r if r.startswith("r"):
                 a.build = BuildType.Release
+                break
             case r if r.startswith("t"):
                 a.build = BuildType.Test
+                break
             case d if d.startswith("d"):
                 a.build = BuildType.Debug
-            case t if t.startswith("i"):
+                break
+            case i if i.startswith("i"):
                 a.build = BuildType.Install
+                break
             case h if h.startswith("h"):
                 a.help = True
+                break
+        count += 1
+
     return a
 
 def main():
