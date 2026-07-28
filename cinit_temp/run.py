@@ -187,29 +187,22 @@ def get_args() -> Args:
     while count < len(sys.argv):
         arg = sys.argv[count]
         match arg:
-            case t if t.startswith("--test="):
-                a.test_n = int(arg[7:])
-                break
+            case t if t.startswith("--test="):  # --test=#
+                a.test_n = int(arg.split("=", 1)[1])
             case runarg if runarg.startswith("--"):
                 count += 1
                 for ra in sys.argv[count:]:
                     a.runargs.append(ra)
-                break
             case r if r.startswith("r"):
                 a.build = BuildType.Release
-                break
             case r if r.startswith("t"):
                 a.build = BuildType.Test
-                break
             case d if d.startswith("d"):
                 a.build = BuildType.Debug
-                break
             case i if i.startswith("i"):
                 a.build = BuildType.Install
-                break
             case h if h.startswith("h"):
                 a.help = True
-                break
         count += 1
 
     return a
