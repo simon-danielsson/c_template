@@ -66,6 +66,7 @@ class Args:
     runargs: list[str]
     build: BuildType = BuildType.Debug
     help: bool = False
+    print_details: None | bool = None
     prog: str = ""
     test_n: int = 0
 
@@ -152,7 +153,9 @@ def build(a: Args) -> None:
         compiler = "gcc"
         output = run_cmd([compiler] + build_cmd)
 
-    if PRINT_COMPILE_DETAILS:
+    if a.print_details == None and PRINT_COMPILE_DETAILS:
+        print(f"{a.build.value} via " f"{compiler} ({C_STD}) {output.exec_time}")
+    if a.print_details == True:
         print(f"{a.build.value} via " f"{compiler} ({C_STD}) {output.exec_time}")
 
     if AUTO_RUN and a.build != BuildType.Install:
@@ -187,6 +190,8 @@ def get_args() -> Args:
     while count < len(sys.argv):
         arg = sys.argv[count]
         match arg:
+            case d if d.startswith("--no-details"):  # --test=#
+                a.print_details = False
             case t if t.startswith("--test="):  # --test=#
                 a.test_n = int(arg.split("=", 1)[1])
             case runarg if runarg.startswith("--"):
