@@ -168,17 +168,20 @@ def build(a: Args) -> None:
 
 # main ------------------------------------------------------------------------
 
-def help() -> None:
-    print(
-            f"{BLD}run release{RST}\n"
-            f"-> ./build/release\n"
-            f"{BLD}run debug{RST}\n"
-            f"-> ./build/debug\n"
-            f"{BLD}run install{RST}\n"
-            f"-> ./build/install"
-            f"{BLD}run test --test=<num>{RST}\n"
-            f"-> ./build/test"
-            )
+_HELP_STR = """
+Usage: ./run.py <flag|cmd>
+
+--details
+    * Show compilation details at build.
+
+help
+    * Show help.
+
+install,
+release,
+debug,
+test
+    * Various build variations (no documentation written yet)"""
 
 def get_args() -> Args:
     a: Args = Args(runargs=[])
@@ -187,8 +190,8 @@ def get_args() -> Args:
     while count < len(sys.argv):
         arg = sys.argv[count]
         match arg:
-            case d if d.startswith("--no-details"):  # --test=#
-                a.print_details = False
+            case d if d.startswith("--details"):
+                a.print_details = True
             case t if t.startswith("--test="):  # --test=#
                 a.test_n = int(arg.split("=", 1)[1])
             case runarg if runarg.startswith("--"):
@@ -212,7 +215,7 @@ def get_args() -> Args:
 def main():
     a: Args = get_args()
     if a.help:
-        help()
+        print(_HELP_STR)
         return
     build(a)
 
