@@ -1,8 +1,8 @@
 #include "../src/main.h"
 
-static void test1() { printf("test 1"); }
-static void test2() { printf("test 2"); }
-static void test3() { printf("test 3"); }
+static void test1(void) { printf("test 1"); }
+static void test2(void) { printf("test 2"); }
+static void test3(void) { printf("test 3"); }
 
 typedef void (*test_fn)(void);
 static const test_fn tests[] = {

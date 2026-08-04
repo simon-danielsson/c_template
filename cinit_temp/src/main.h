@@ -1,6 +1,28 @@
 #ifndef MAIN_H
 #define MAIN_H
 
+// libraries ------------------------------------------------------------------
+
+#include <assert.h>
+#include <math.h>
+#include <stdbool.h>
+#include <stdint.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <time.h>
+
+// type definitions -----------------------------------------------------------
+
+/* to make use of the 'static' keyword more explicit */
+#define global_var static
+#define intern_fn static
+
+/* for use with counters and such */
+typedef uint32_t uint;
+
+// environment variables ------------------------------------------------------
+
 #if defined(NDEBUG)
 #define BUILD_RELEASE 1
 #define BUILD_DEBUG 0
@@ -12,36 +34,24 @@
 #ifndef TEST
 #define TEST 0
 #endif
+
 #include "../tests/tests.h"
-
-// standard libraries ---------------------------------------------------------
-
-#include <assert.h>
-#include <math.h>
-#include <stdbool.h>
-#include <stdint.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-
-// project variables ----------------------------------------------------------
-
-#ifndef ENV_NAME // project name
+#ifndef ENV_NAME /* project name */
 #define ENV_NAME "UNDEFINED"
 #endif
-#ifndef ENV_AUTHOR // project author
+#ifndef ENV_AUTHOR /* project author */
 #define ENV_AUTHOR "UNDEFINED"
 #endif
-#ifndef ENV_CONTACT // author contact
+#ifndef ENV_CONTACT /* author contact */
 #define ENV_CONTACT "UNDEFINED"
 #endif
-#ifndef ENV_GITHASH // git version hash
+#ifndef ENV_GITHASH /* git version hash */
 #define ENV_GITHASH "UNDEFINED"
 #endif
-#ifndef ENV_GITTAG // git release tag
+#ifndef ENV_GITTAG /* git release tag */
 #define ENV_GITTAG "UNDEFINED"
 #endif
-#ifndef ENV_REPO // git repo
+#ifndef ENV_REPO /* git repo */
 #define ENV_REPO "UNDEFINED"
 #endif
 
